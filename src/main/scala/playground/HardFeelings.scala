@@ -1,4 +1,4 @@
-package experiments
+package playground
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -27,7 +27,7 @@ object HardFeelings {
     val niceWords = sentimentGroups.sortByKey(ascending = false).first._2
 
     // Sensitive users, avert your eyes from these harsh words...
-    println("Words with harshest sentiment include:\n\t" + harshWords.mkString(", "))
+    println("Words with the harshest sentiment include:\n\t" + harshWords.mkString(", "))
 
     // Awwwwwwwwe...
     println("Words with most positive sentiment include:\n\t" + niceWords.mkString(", "))

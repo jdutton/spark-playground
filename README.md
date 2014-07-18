@@ -13,11 +13,11 @@ simple interactive processing.
 
 The Scala experiments code is located in the standard directory layout at `src/main/scala`.
 
-To build the experiments into a jar for submitting to spark:
+To build the various experiments into a jar for submitting to spark:
 
 ```
 $ sbt package
-$ spark-submit --class experiments.HardFeelings --master local[4] target/scala-2.10/spark-playground_*.jar
+$ spark-submit --class playground.HardFeelings --master local[4] target/scala-2.10/spark-playground_*.jar
 ```
 
 ## Development
