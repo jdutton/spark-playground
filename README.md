@@ -27,3 +27,9 @@ To develop in Eclipse (like the Scala IDE), initialize or update the Scala proje
 ```
 $ sbt eclipse
 ```
+
+## ToDo
+
+1. Implement graphing library
+2. Figure out general approach to impementing algorithms
+3. Implement JSON library
