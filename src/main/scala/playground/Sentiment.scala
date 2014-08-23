@@ -1,5 +1,18 @@
 package playground
 
+case class Emotion(sentiment: Int, passion: Int, count: Int = 1) {
+  def +(that: Emotion) = Emotion(
+    sentiment = this.sentiment + that.sentiment,
+    passion = this.passion + that.passion,
+    count = this.count + that.count)
+
+  def passionScore = passion.toDouble / count
+
+  def sentimentScore = sentiment.toDouble / count
+
+  override def toString() = s"Emotion(count=$count, passionScore=$passionScore, sentimentScore=$sentimentScore)"
+}
+
 object Sentiment {
   val feelingWordsFile = "AFINN-111.txt"
   val feelingWordsFilePath = "src/main/resources/playground/" + feelingWordsFile
@@ -19,6 +32,6 @@ object Sentiment {
 
     sentimentByWord.withDefaultValue(0)
   }
-  
+
   lazy val sentimentOfWord = readSentimentByWordFromResource
 }
