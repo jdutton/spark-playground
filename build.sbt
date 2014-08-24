@@ -24,3 +24,9 @@ resolvers ++= Seq(
 )
 
 assemblySettings
+
+initialCommands in console := """
+    import org.apache.spark.SparkContext
+    import org.apache.spark.SparkContext._
+    val sc = new org.apache.spark.SparkContext("local[4]", "playground-console")
+"""
