@@ -6,8 +6,7 @@ import org.apache.spark._
 class HardFeelingsSpec extends Specification {
   "HardFeelings" should {
     "identify harshest words" in {
-      val conf = new SparkConf().setMaster("local[2]").setAppName("harsh words")
-      val sc = new SparkContext(conf)
+      val sc = new SparkContext(DefaultConf("harsh words").setMaster("local[2]"))
       try {
         {
           val (harshWords, niceWords) = HardFeelings.harshestAndNicest(sc)

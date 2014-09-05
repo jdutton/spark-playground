@@ -89,8 +89,7 @@ object Merica {
   }
 
   def main(args: Array[String]) {
-    val conf = new SparkConf().setAppName("Merica")
-    val sc = new SparkContext(conf)
+    val sc = new SparkContext(DefaultConf("Merica"))
     val passionateTweets = tweetsByPassion(sc).sortByKey(ascending = false).take(5)
     val positiveTweets = tweetsBySentiment(sc).sortByKey(ascending = false).take(5)
     val negativeTweets = tweetsBySentiment(sc).sortByKey(ascending = true).take(5)

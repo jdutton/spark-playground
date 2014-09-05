@@ -35,8 +35,7 @@ object HardFeelings {
   }
 
   def main(args: Array[String]) {
-    val conf = new SparkConf().setAppName("Hard Feelings")
-    val sc = new SparkContext(conf)
+    val sc = new SparkContext(DefaultConf("Hard Feelings"))
     val (harshWords, niceWords) = harshestAndNicest(sc)
 
     // Sensitive users, avert your eyes from these harsh words...

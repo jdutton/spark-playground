@@ -6,12 +6,21 @@ version := "0.11"
 
 scalaVersion := "2.10.4"
 
+// Base Spark-provided dependencies
 libraryDependencies ++= Seq(
     "org.apache.spark" %% "spark-core" % "1.0.1" % "provided",
     "org.apache.spark" %% "spark-streaming-twitter" % "1.0.1" % "provided",
-    "org.apache.hadoop" % "hadoop-client" % "2.4.0" % "provided",
+    "org.apache.hadoop" % "hadoop-client" % "2.4.0" % "provided"
+)
+
+// Extra libraries used in the playground
+libraryDependencies ++= Seq(
     "org.elasticsearch" % "elasticsearch-hadoop-mr" % "2.1.0.BUILD-SNAPSHOT",
-    "com.typesafe.play" %% "play-json" % "2.2.2",
+    "com.typesafe.play" %% "play-json" % "2.2.2"
+)
+
+// Test-related libraries
+libraryDependencies ++= Seq(
     "org.specs2" %% "specs2" % "2.3.13" % "test"
 )
 
@@ -26,7 +35,9 @@ resolvers ++= Seq(
 assemblySettings
 
 initialCommands in console := """
-    import org.apache.spark.SparkContext
+    import org.apache.spark._
     import org.apache.spark.SparkContext._
-    val sc = new org.apache.spark.SparkContext("local[4]", "playground-console")
+    import playground._
+    val sparkConf = playground.DefaultConf("playground-console").setMaster("local[4]")
+    val sc = new SparkContext(sparkConf)
 """
