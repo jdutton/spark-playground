@@ -28,6 +28,14 @@ To develop in Eclipse (like the Scala IDE), initialize or update the Scala proje
 $ sbt eclipse
 ```
 
+## Testing
+
+To run unit tests:
+
+```
+$ sbt test
+```
+
 ## ToDo
 
 1. Implement graphing library

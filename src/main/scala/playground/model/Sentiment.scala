@@ -1,4 +1,4 @@
-package playground
+package playground.model
 
 case class Emotion(sentiment: Int, passion: Int, count: Int = 1) {
   def +(that: Emotion) = Emotion(
@@ -15,7 +15,7 @@ case class Emotion(sentiment: Int, passion: Int, count: Int = 1) {
 
 object Sentiment {
   val feelingWordsFile = "AFINN-111.txt"
-  val feelingWordsFilePath = "src/main/resources/playground/" + feelingWordsFile
+  val feelingWordsFilePath = "src/main/resources/playground/model/" + feelingWordsFile
 
   // Create an in-memory map of word -> sentiment score
   // The Map has a default sentiment score of 0 so the Map is a function (all words return a valid score),
@@ -34,4 +34,21 @@ object Sentiment {
   }
 
   lazy val sentimentOfWord = readSentimentByWordFromResource
+
+  def passion(text: String): Int = {
+    val words = text.toLowerCase.split("""\W+""")
+    val wordScores = words.map { word =>
+      val wordScore = sentimentOfWord(word)
+      if (wordScore < 0) -wordScore else wordScore
+    }
+    val passionScore: Int = wordScores.fold(0) { (total, wordScore) => total + wordScore }
+    passionScore
+  }
+
+  def sentiment(text: String): Int = {
+    val words = text.toLowerCase.split("""\W+""")
+    val sentimentScore = words.map(sentimentOfWord(_)).fold(0) { (total, wordScore) => total + wordScore }
+    sentimentScore
+  }
+
 }
