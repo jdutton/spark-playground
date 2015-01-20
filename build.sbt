@@ -37,6 +37,19 @@ libraryDependencies ++= Seq(
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-streaming-kafka" % "1.2.1")
 
+// HBase Dependencies
+resolvers ++= Seq(
+  "Apache HBase" at "https://repository.apache.org/content/repositories/releases",
+  "Thrift" at "http://people.apache.org/~rawson/repo/")
+
+libraryDependencies ++= Seq(
+  "org.apache.hbase" % "hbase" % "0.98.9-hadoop2",
+  "org.apache.hbase" % "hbase-common" % "0.98.9-hadoop2",
+  "org.apache.hbase" % "hbase-protocol" % "0.98.9-hadoop2",
+  "org.apache.hbase" % "hbase-client" % "0.98.9-hadoop2",
+  "org.apache.hbase" % "hbase-hadoop-compat" % "0.98.9-hadoop2",
+  "org.apache.hbase" % "hbase-server" % "0.98.9-hadoop2" excludeAll ExclusionRule(organization = "org.mortbay.jetty") )
+
 // Test-related libraries
 libraryDependencies ++= Seq(
   "org.specs2" %% "specs2" % "2.3.13" % "test")
