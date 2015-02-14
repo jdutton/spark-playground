@@ -46,13 +46,13 @@ object Merica {
     val positiveTweets = tweetsBySentiment(tweets).sortByKey(ascending = false).take(5)
     val negativeTweets = tweetsBySentiment(tweets).sortByKey(ascending = true).take(5)
     val statesByPassion = tweetsByState(tweets)
-    	.map { tup => (tup._2.passionScore, tup._1) }
-    	.sortByKey(ascending = false)
-    	.take(55)
+      .map { tup => (tup._2.passionScore, tup._1) }
+      .sortByKey(ascending = false)
+      .take(55)
     val statesBySentiment = tweetsByState(tweets)
-    	.map { tup => (tup._2.sentimentScore, tup._1) }
-    	.sortByKey(ascending = false)
-    	.take(55)
+      .map { tup => (tup._2.sentimentScore, tup._1) }
+      .sortByKey(ascending = false)
+      .take(55)
     println("\nPassion by state: \n" + statesByPassion.mkString("\n"))
     println("\nSentiment by state: \n" + statesBySentiment.mkString("\n"))
     println("\nMost Passionate tweets: \n" + passionateTweets.mkString("\n"))
