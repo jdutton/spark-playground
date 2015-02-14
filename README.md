@@ -20,6 +20,9 @@ $ sbt assembly
 $ spark-submit --class playground.HardFeelings --master local[4] target/scala-2.10/spark-playground-assembly-*.jar
 ```
 
+Note that spark-submit will use the `HADOOP_CONF_DIR` environment variable to find HDFS.  To run
+without HDFS, make sure this environment variable is *not set*.
+
 ## Development
 
 To develop in Eclipse (like the Scala IDE), initialize or update the Scala project by running:
