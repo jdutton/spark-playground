@@ -17,8 +17,19 @@ libraryDependencies ++= Seq(
 
 // Extra libraries used in the playground
 libraryDependencies ++= Seq(
-  "org.elasticsearch" % "elasticsearch-hadoop-mr" % "2.1.0.BUILD-SNAPSHOT",
   "com.typesafe.play" %% "play-json" % "2.3.7")
+
+// Elasticsearch integration
+libraryDependencies ++= Seq(
+  ("org.elasticsearch" % "elasticsearch-spark_2.10" % "2.1.0.Beta3").
+    exclude("org.eclipse.jetty.orbit", "javax.mail.glassfish").
+    exclude("org.eclipse.jetty.orbit", "javax.servlet").
+    exclude("org.slf4j", "slf4j-api").
+    exclude("com.esotericsoftware.minlog", "minlog").
+    exclude("commons-beanutils", "commons-beanutils").
+    exclude("commons-collections", "commons-collections")
+    exclude("commons-logging", "commons-logging")
+)
 
 // Test-related libraries
 libraryDependencies ++= Seq(
@@ -26,7 +37,10 @@ libraryDependencies ++= Seq(
 
 
 scalariformSettings
- 
+
+// Skip tests when assembling fat JAR
+test in assembly := {}
+
 initialCommands in console := """
   import org.apache.spark._
   import org.apache.spark.SparkContext._

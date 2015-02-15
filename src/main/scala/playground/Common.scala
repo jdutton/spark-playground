@@ -7,6 +7,7 @@ object DefaultConf {
   def apply(name: String) = {
     val conf = new org.apache.spark.SparkConf().setAppName(name)
     conf.set("spark.serializer", classOf[KryoSerializer].getName)
+    conf.set("es.index.auto.create", "true")
     conf
   }
 }

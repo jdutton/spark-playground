@@ -2,7 +2,7 @@ package playground.model
 
 import play.api.libs.json._
 
-case class Tweet(text: String, hashtags: Set[String], countryCode: String, stateCode: String) {
+case class Tweet(id: String, text: String, hashtags: Set[String], countryCode: String, stateCode: String) {
 
   lazy val passion: Int = Sentiment.passion(text)
 
@@ -12,12 +12,16 @@ case class Tweet(text: String, hashtags: Set[String], countryCode: String, state
 }
 
 object Tweet {
+
+  implicit val _ = Json.format[Tweet]
+
   /**
    * Create a tweet from a string encoded in Twitter JSON format
    */
   def from(jsonStr: String): Option[Tweet] = {
     val tweet = Json.parse(jsonStr).asOpt[JsObject].flatMap { jsObj =>
       for {
+        id <- (jsObj \ "id_str").asOpt[String]
         text <- (jsObj \ "text").asOpt[String]
         countryCode <- (jsObj \ "place" \ "country_code").asOpt[String]
         placeType <- (jsObj \ "place" \ "place_type").asOpt[String]
@@ -29,7 +33,7 @@ object Tweet {
           case city :: stateCode :: Nil if city == name && placeType == "city" => stateCode
           case _ => ""
         }
-        Tweet(text = text, hashtags = hashtags, countryCode = countryCode, stateCode = stateCode)
+        Tweet(id = id, text = text, hashtags = hashtags, countryCode = countryCode, stateCode = stateCode)
       }
     }
     tweet

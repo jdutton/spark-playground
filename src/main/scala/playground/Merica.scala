@@ -39,9 +39,18 @@ object Merica {
     stateScores
   }
 
+  def tweetsToES(tweets: RDD[Tweet]) {
+    import org.elasticsearch.spark.rdd.EsSpark
+    import org.elasticsearch.spark._
+    import play.api.libs.json.Json
+    val jsonTweets = tweets.map(Json.toJson(_).toString)
+    jsonTweets.saveJsonToEs("spark-playground/tweet", Map("es.mapping.id" -> "id"))
+  }
+
   def main(args: Array[String]) {
     val sc = new SparkContext(DefaultConf("Merica"))
     val tweets = readTweets(sc)
+    tweetsToES(tweets)
     val passionateTweets = tweetsByPassion(tweets).sortByKey(ascending = false).take(5)
     val positiveTweets = tweetsBySentiment(tweets).sortByKey(ascending = false).take(5)
     val negativeTweets = tweetsBySentiment(tweets).sortByKey(ascending = true).take(5)
