@@ -11,8 +11,8 @@ resolvers ++= Seq(
 
 // Base Spark-provided dependencies
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-core" % "1.2.0" % "provided",
-  "org.apache.spark" %% "spark-streaming-twitter" % "1.2.0" % "provided",
+  "org.apache.spark" %% "spark-core" % "1.2.1" % "provided",
+  "org.apache.spark" %% "spark-streaming-twitter" % "1.2.1" % "provided",
   "org.apache.hadoop" % "hadoop-client" % "2.4.0" % "provided")
 
 // Extra libraries used in the playground
