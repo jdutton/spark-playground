@@ -1,0 +1,6 @@
+# Copy to twitter.conf and specify values.
+# See http://ampcamp.berkeley.edu/3/exercises/realtime-processing-with-spark-streaming.html
+twitter4j.oauth.consumerKey="????"
+twitter4j.oauth.consumerSecret="????"
+twitter4j.oauth.accessToken="????"
+twitter4j.oauth.accessTokenSecret="????"

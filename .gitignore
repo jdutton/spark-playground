@@ -19,3 +19,5 @@ RUNNING_PID
 .target
 **/bin
 **/.gitignore
+
+src/main/resources/twitter.conf

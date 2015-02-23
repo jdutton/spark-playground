@@ -50,7 +50,6 @@ object Merica {
   def main(args: Array[String]) {
     val sc = new SparkContext(DefaultConf("Merica"))
     val tweets = readTweets(sc)
-    tweetsToES(tweets)
     val passionateTweets = tweetsByPassion(tweets).sortByKey(ascending = false).take(5)
     val positiveTweets = tweetsBySentiment(tweets).sortByKey(ascending = false).take(5)
     val negativeTweets = tweetsBySentiment(tweets).sortByKey(ascending = true).take(5)
