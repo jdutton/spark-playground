@@ -1,5 +1,7 @@
 # Spark Playground
 
+[![Build Status](https://travis-ci.org/jdutton/spark-playground.svg?branch=master)](https://travis-ci.org/jdutton/spark-playground)
+
 This is a playground for experiments with Spark!  Who's got two thumbs and is excited...!?
 
 ## Getting Started
