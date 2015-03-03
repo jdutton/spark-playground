@@ -4,15 +4,21 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
+import org.elasticsearch.spark.rdd.EsSpark
+import org.elasticsearch.spark._
+import play.api.libs.json.Json
 import scala.collection.immutable._
 import playground.model._
+import playground.connector._
 
 object Merica {
-  val twitterJsonFile = "america.txt"
+
+  // This should match MericaStreaming.HDFS_OUTPUT_PATH
+  val HDFS_INPUT_PATH = "spark-playground-data/merica-tweets-json/*"
 
   def readTweets(sc: SparkContext): RDD[Tweet] = {
-    val tweetsText = sc.textFile(twitterJsonFile)
-    val tweets = tweetsText.flatMap(Tweet.from(_))
+    val tweetsText = sc.textFile(HDFS_INPUT_PATH)
+    val tweets = tweetsText.flatMap(Json.parse(_).asOpt[Tweet])
     tweets.cache
   }
 
@@ -40,27 +46,60 @@ object Merica {
   }
 
   def tweetsToES(tweets: RDD[Tweet]) {
-    import org.elasticsearch.spark.rdd.EsSpark
-    import org.elasticsearch.spark._
-    import play.api.libs.json.Json
-    val jsonTweets = tweets.map(Json.toJson(_).toString)
-    jsonTweets.saveJsonToEs("spark-playground/tweet", Map("es.mapping.id" -> "id"))
+    // FIXME: Below fails at run-time due to "task not serializable" exception
+    //Elasticsearch.write(tweets, "spark-playground/tweet", Map("es.mapping.id" -> "id"))
+    val jsonStrings = tweets.map(Json.toJson(_).toString)
+    jsonStrings.saveJsonToEs("spark-playground/tweet", Map("es.mapping.id" -> "id"))
+  }
+
+  def tweetsFromES(sc: SparkContext, query: String = ""): RDD[Tweet] = {
+    // FIXME: Below fails at run-time due to "task not serializable" exception
+    //Elasticsearch.read(sc, "spark-playground/tweet")
+
+    // ES-Hadoop BUG: the last returned JSON string has trailing "}]}", for example `{"id":1,"text":"Hello World"}}]}`
+    sc.esJsonRDD(resource = "spark-playground/tweet", query = query).values.flatMap(Json.parse(_).asOpt[Tweet])
   }
 
   def main(args: Array[String]) {
     val sc = new SparkContext(DefaultConf("Merica"))
-    val tweets = readTweets(sc)
+
+    // NOTE: these conf value must start with 'spark.*' if they are to be passed in from spark-submit --conf
+    val elasticsearchEnabled = sc.getConf.getBoolean("spark.playground.es.enabled", false)
+    println("Playground: Elasticsearch is " + (if (elasticsearchEnabled) "ENABLED" else "DISABLED"))
+
+    val tweetsTextFile = readTweets(sc)
+    //tweetsTextFile.map(Json.toJson(_).toString).saveAsTextFile("merica-tweets")
+
+    if (elasticsearchEnabled) {
+      tweetsToES(tweetsTextFile)
+      Thread.sleep(2) // ES doesn't index immediately
+    }
+
+    val tweets = if (elasticsearchEnabled) {
+      // BUG: ES-Hadoop bug (see above) prevents reading from ES as JSON at the moment
+      //tweetsFromES(sc, "?q=text:huh")
+      tweetsTextFile
+    } else {
+      tweetsTextFile
+    }
+
     val passionateTweets = tweetsByPassion(tweets).sortByKey(ascending = false).take(5)
-    val positiveTweets = tweetsBySentiment(tweets).sortByKey(ascending = false).take(5)
-    val negativeTweets = tweetsBySentiment(tweets).sortByKey(ascending = true).take(5)
     val statesByPassion = tweetsByState(tweets)
       .map { tup => (tup._2.passionScore, tup._1) }
       .sortByKey(ascending = false)
       .take(55)
+
+    val sentimentTweetOutputDir = "tweets-by-sentiment"
+    val sentimentTweets = tweetsBySentiment(tweets)
+    //Delete file first, to prevent failures...
+    //sentimentTweets.saveAsTextFile(sentimentTweetOutputDir)
+    val positiveTweets = sentimentTweets.sortByKey(ascending = false).take(5)
+    val negativeTweets = sentimentTweets.sortByKey(ascending = true).take(5)
     val statesBySentiment = tweetsByState(tweets)
       .map { tup => (tup._2.sentimentScore, tup._1) }
       .sortByKey(ascending = false)
       .take(55)
+
     println("\nPassion by state: \n" + statesByPassion.mkString("\n"))
     println("\nSentiment by state: \n" + statesBySentiment.mkString("\n"))
     println("\nMost Passionate tweets: \n" + passionateTweets.mkString("\n"))

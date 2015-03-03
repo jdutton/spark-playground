@@ -30,12 +30,12 @@ libraryDependencies ++= Seq(
     exclude("org.apache.hadoop", "hadoop-yarn-api").
     exclude("org.eclipse.jetty.orbit", "javax.mail.glassfish").
     exclude("org.eclipse.jetty.orbit", "javax.servlet").
-    exclude("org.slf4j", "slf4j-api").
-    exclude("com.esotericsoftware.minlog", "minlog").
-    exclude("commons-beanutils", "commons-beanutils").
-    exclude("commons-collections", "commons-collections")
-    exclude("commons-logging", "commons-logging")
+    exclude("org.slf4j", "slf4j-api")
 )
+
+// Kafka Dependencies
+libraryDependencies ++= Seq(
+  "org.apache.spark" %% "spark-streaming-kafka" % "1.2.1")
 
 // Test-related libraries
 libraryDependencies ++= Seq(
@@ -47,14 +47,29 @@ scalariformSettings
 // Skip tests when assembling fat JAR
 test in assembly := {}
 
+// Exclude jars that conflict with Spark (see https://github.com/sbt/sbt-assembly)
+libraryDependencies ~= { _ map {
+  case m if Seq("org.apache.hbase", "org.elasticsearch").contains(m.organization) =>
+    m.exclude("commons-logging", "commons-logging").
+      exclude("commons-collections", "commons-collections").
+      exclude("commons-beanutils", "commons-beanutils-core").
+      exclude("com.esotericsoftware.minlog", "minlog")
+  case m => m
+}}
+
 initialCommands in console := """
   import org.apache.spark._
   import org.apache.spark.SparkContext._
   import org.apache.spark.streaming._
-  import org.apache.spark.streaming.twitter._
   import org.apache.spark.streaming.StreamingContext._
+  import org.apache.spark.streaming.dstream._
+  import org.apache.spark.streaming.kafka._
+  import org.apache.spark.streaming.twitter._
+  import org.elasticsearch.spark.rdd.EsSpark
+  import org.elasticsearch.spark._
   import play.api.libs.json.Json
   import playground._
+  import playground.model._
   val sparkConf = playground.DefaultConf("playground-console").setMaster("local[4]")
   val sc = new SparkContext(sparkConf)
   val ssc = new StreamingContext(sc, Seconds(10))

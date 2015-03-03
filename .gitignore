@@ -21,3 +21,6 @@ RUNNING_PID
 **/.gitignore
 
 src/main/resources/twitter.conf
+
+/log-cleaner.log
+/spark-playground-data

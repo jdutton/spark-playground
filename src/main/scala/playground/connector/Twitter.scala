@@ -4,9 +4,12 @@ import com.typesafe.config.ConfigFactory
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.streaming._
+import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.streaming.twitter._
 import playground.DefaultConf
+import playground.model._
 import scala.collection.JavaConversions._
+import scala.collection.immutable._
 
 object Twitter {
 
@@ -32,12 +35,26 @@ object Twitter {
     }
   }
 
+  /**
+   * Create a tweet stream, applying any appropriate 'track' filters and map the results to our local Tweet model
+   * @param ssc spark StreamingContext
+   * @param trackFilters restrict stream to track the following list of keyword topics
+   *
+   * @see
+   * See [[https://dev.twitter.com/streaming/overview/request-parameters#track Twitter track filtering]] for how to filter.
+   * Note that location filtering is currently not supported via TwitterUtils - see [[https://github.com/apache/spark/pull/1717 Github pull request 1717]].
+   */
+  def createTweetStream(ssc: StreamingContext, trackFilters: Seq[String] = Nil): DStream[Tweet] = {
+    readConfig()
+    val twitterStream = TwitterUtils.createStream(ssc, twitterAuth = None, filters = trackFilters)
+    twitterStream.flatMap(Tweet.from(_))
+  }
+
   def main(args: Array[String]) {
     val sc = new SparkContext(DefaultConf("Twitter"))
     val ssc = new StreamingContext(sc, Seconds(10))
-    readConfig()
-    val twitterStream = TwitterUtils.createStream(ssc, None)
-    twitterStream.print()
+    val tweetStream = createTweetStream(ssc)
+    tweetStream.print()
     ssc.start()
     ssc.awaitTermination()
   }
