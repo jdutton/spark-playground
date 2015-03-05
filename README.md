@@ -97,6 +97,11 @@ $ spark-submit --class playground.Merica --master local[4] target/scala-2.10/spa
 $ spark-submit --conf spark.playground.es.enabled=true --class playground.Merica --master local[4] target/scala-2.10/spark-playground-assembly-*.jar
 ```
 
+The Merica sentiment analysis job can perform sentiment calculations the "easy way" (compute
+sentiment in memory) or the "hard way" (distributed sentiment calculation via Spark).
+
+To change the calculation mode `--conf spark.playground.easy=false` (defaults to true).
+
 ## Development
 
 Just like any other SBT project, to develop in Eclipse (like the Scala IDE), initialize or update the Scala project by running:

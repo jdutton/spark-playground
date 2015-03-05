@@ -6,6 +6,8 @@ case class Tweet(id: String, text: String, hashtags: Set[String], retweet: Boole
 
   def hasLocation: Boolean = countryCode.nonEmpty && stateCode.nonEmpty && city.nonEmpty
 
+  def words: List[String] = Sentiment.words(text)
+
   lazy val passion: Int = Sentiment.passion(text)
 
   lazy val sentiment: Int = Sentiment.sentiment(text)

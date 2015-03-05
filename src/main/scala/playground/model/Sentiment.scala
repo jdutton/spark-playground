@@ -35,9 +35,10 @@ object Sentiment {
 
   lazy val sentimentOfWord = readSentimentByWordFromResource
 
+  def words(text: String): List[String] = text.toLowerCase.split("""\W+""").toList
+
   def passion(text: String): Int = {
-    val words = text.toLowerCase.split("""\W+""")
-    val wordScores = words.map { word =>
+    val wordScores = words(text).map { word =>
       val wordScore = sentimentOfWord(word)
       if (wordScore < 0) -wordScore else wordScore
     }
@@ -46,8 +47,7 @@ object Sentiment {
   }
 
   def sentiment(text: String): Int = {
-    val words = text.toLowerCase.split("""\W+""")
-    val sentimentScore = words.map(sentimentOfWord(_)).fold(0) { (total, wordScore) => total + wordScore }
+    val sentimentScore = words(text).map(sentimentOfWord(_)).fold(0) { (total, wordScore) => total + wordScore }
     sentimentScore
   }
 

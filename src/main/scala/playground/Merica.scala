@@ -30,9 +30,42 @@ object Merica {
   }
 
   // Tweets scored by sentiment
-  def tweetsBySentiment(tweets: RDD[Tweet]): RDD[(Int, Tweet)] = {
-    tweets.map { tweet: Tweet =>
-      (tweet.sentiment, tweet)
+  def tweetsBySentiment(sc: SparkContext, tweets: RDD[Tweet], easyWay: Boolean): RDD[(Int, Tweet)] = {
+    if (easyWay) {
+      // Compute the sentiment directly in memory (rather than distributing the calculation to Spark)
+      tweets.map { tweet: Tweet =>
+        (tweet.sentiment, tweet)
+      }
+    } else {
+      // Create RDD's of words to sentiments, then split tweets into words -> tweet,
+      // then use joins to do distributed calculation of sentiment.
+      // This simply highlights how to use map, flatMap, and join.
+
+      // (tweetId -> Tweet)
+      val tweetsById = tweets.map { tweet => tweet.id -> tweet }
+
+      // ( word -> tweetId )
+      val tweetWordsById = tweets.flatMap { tweet => tweet.words.map(_ -> tweet.id) }
+
+      // ( word -> sentimentScore )
+      val sentimentByWord = HardFeelings.sentimentByWord(sc)
+
+      // ( word -> (tweetId -> sentimentScore) )
+      val joinedWords = tweetWordsById join sentimentByWord
+
+      // ( tweetId -> sentimentScore )
+      val tweetIdToSentiment = joinedWords.map(_._2)
+
+      // ( tweetId -> sentimentScore )
+      val tweetIdToTotalSentiment = tweetIdToSentiment.groupByKey.map(tup => tup._1 -> tup._2.sum)
+
+      // ( tweetId -> ( sentimentScore -> Tweet ) )
+      val joinedSentimentTweets = tweetIdToTotalSentiment join tweetsById
+
+      // ( sentimentScore -> Tweet )
+      val sentimentTweets = joinedSentimentTweets.map(_._2)
+
+      sentimentTweets
     }
   }
 
@@ -66,9 +99,10 @@ object Merica {
     // NOTE: these conf value must start with 'spark.*' if they are to be passed in from spark-submit --conf
     val elasticsearchEnabled = sc.getConf.getBoolean("spark.playground.es.enabled", false)
     println("Playground: Elasticsearch is " + (if (elasticsearchEnabled) "ENABLED" else "DISABLED"))
+    val easyWay = sc.getConf.getBoolean("spark.playground.easy", true)
+    println("Playground: Sentiment calculation will be performed the " + (if (easyWay) "EASY" else "HARD") + " way")
 
     val tweetsTextFile = readTweets(sc)
-    //tweetsTextFile.map(Json.toJson(_).toString).saveAsTextFile("merica-tweets")
 
     if (elasticsearchEnabled) {
       tweetsToES(tweetsTextFile)
@@ -90,7 +124,7 @@ object Merica {
       .take(55)
 
     val sentimentTweetOutputDir = "tweets-by-sentiment"
-    val sentimentTweets = tweetsBySentiment(tweets)
+    val sentimentTweets = tweetsBySentiment(sc, tweets, easyWay = easyWay)
     //Delete file first, to prevent failures...
     //sentimentTweets.saveAsTextFile(sentimentTweetOutputDir)
     val positiveTweets = sentimentTweets.sortByKey(ascending = false).take(5)
