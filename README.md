@@ -86,6 +86,11 @@ $ spark-submit --conf spark.playground.hdfs.enabled=true --class playground.Meri
 
 Note that any combination of the above `--conf` external datastores is supported.
 
+The Merica and MericaStreaming sentiment analysis jobs can perform sentiment calculations the "easy
+way" (compute sentiment in memory) or the "hard way" (distributed sentiment calculation via Spark).
+
+To change the calculation mode `--conf spark.playground.easy=false` (defaults to true).
+This works for streaming or batch.
 
 ## Batch Tweet Processing
 
@@ -96,11 +101,6 @@ above, run any of the following:
 $ spark-submit --class playground.Merica --master local[4] target/scala-2.10/spark-playground-assembly-*.jar
 $ spark-submit --conf spark.playground.es.enabled=true --class playground.Merica --master local[4] target/scala-2.10/spark-playground-assembly-*.jar
 ```
-
-The Merica sentiment analysis job can perform sentiment calculations the "easy way" (compute
-sentiment in memory) or the "hard way" (distributed sentiment calculation via Spark).
-
-To change the calculation mode `--conf spark.playground.easy=false` (defaults to true).
 
 ## Development
 

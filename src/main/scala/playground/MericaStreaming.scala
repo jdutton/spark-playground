@@ -10,6 +10,8 @@ import org.apache.spark.streaming.StreamingContext._
 import org.apache.spark.streaming.dstream._
 import play.api.libs.json.Json
 import scala.collection.immutable._
+
+import playground._
 import playground.model._
 import playground.connector._
 
@@ -29,6 +31,8 @@ object MericaStreaming {
     println("Playground: Elasticsearch is " + (if (elasticsearchEnabled) "ENABLED" else "DISABLED"))
     val hdfsEnabled = sc.getConf.getBoolean("spark.playground.hdfs.enabled", false)
     println("Playground: HDFS is " + (if (hdfsEnabled) "ENABLED" else "DISABLED"))
+    val easyWay = sc.getConf.getBoolean("spark.playground.easy", true)
+    println("Playground: Sentiment calculation will be performed the " + (if (easyWay) "EASY" else "HARD") + " way")
 
     val trackFilters = List("merica", "america", "obama", "texas")
     val rawTweetStream = Twitter.createTweetStream(ssc, trackFilters = trackFilters)
@@ -71,8 +75,20 @@ object MericaStreaming {
       mericaTweetJson.saveAsTextFiles(HDFS_OUTPUT_PATH)
     }
 
+    // Sentiment analyze the tweets
+
+    val bufferedTweetStream: DStream[Tweet] = mericaIdTweetStream.flatMap {
+      case (id, json) => Json.parse(json).asOpt[Tweet]
+    }
+
+    // ( word -> sentimentScore ) used as a batch RDD input to the streaming RDD transformation below
+    val sentimentByWord = HardFeelings.sentimentByWord(sc)
+
+    // ( sentimentScore -> Tweet )
+    val mericaTweetSentimentStream = bufferedTweetStream.transform { tweets => Merica.tweetsBySentiment(tweets, sentimentByWord, easyWay) }
+
     // Just print the final input stream
-    mericaIdTweetStream.print()
+    mericaTweetSentimentStream.print()
 
     ssc.start()
     ssc.awaitTermination(1000)

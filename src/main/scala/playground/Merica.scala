@@ -29,26 +29,27 @@ object Merica {
     }
   }
 
-  // Tweets scored by sentiment
-  def tweetsBySentiment(sc: SparkContext, tweets: RDD[Tweet], easyWay: Boolean): RDD[(Int, Tweet)] = {
+  /**
+   * Calculate Tweet sentiment using an RDD of tweets and an RDD of (word -> sentimentScore).
+   *
+   * This is crazy inefficient compared to loading the words/sentiment into memory and calculating,
+   * but this highlights using a distributed algorithm to solve the calculation.
+   *
+   * Note: setting easyWay=true just solves for sentiment in memory (rather than Spark).
+   *
+   */
+  def tweetsBySentiment(tweets: RDD[Tweet], sentimentByWord: RDD[(String, Int)], easyWay: Boolean = false): RDD[(Int, Tweet)] = {
     if (easyWay) {
       // Compute the sentiment directly in memory (rather than distributing the calculation to Spark)
       tweets.map { tweet: Tweet =>
         (tweet.sentiment, tweet)
       }
     } else {
-      // Create RDD's of words to sentiments, then split tweets into words -> tweet,
-      // then use joins to do distributed calculation of sentiment.
-      // This simply highlights how to use map, flatMap, and join.
-
       // (tweetId -> Tweet)
       val tweetsById = tweets.map { tweet => tweet.id -> tweet }
 
       // ( word -> tweetId )
       val tweetWordsById = tweets.flatMap { tweet => tweet.words.map(_ -> tweet.id) }
-
-      // ( word -> sentimentScore )
-      val sentimentByWord = HardFeelings.sentimentByWord(sc)
 
       // ( word -> (tweetId -> sentimentScore) )
       val joinedWords = tweetWordsById join sentimentByWord
@@ -123,9 +124,14 @@ object Merica {
       .sortByKey(ascending = false)
       .take(55)
 
-    val sentimentTweetOutputDir = "tweets-by-sentiment"
-    val sentimentTweets = tweetsBySentiment(sc, tweets, easyWay = easyWay)
+    // ( word -> sentimentScore )
+    val sentimentByWord = HardFeelings.sentimentByWord(sc)
+
+    // ( sentimentScore -> Tweet )
+    val sentimentTweets = tweetsBySentiment(tweets, sentimentByWord, easyWay = easyWay)
+
     //Delete file first, to prevent failures...
+    val sentimentTweetOutputDir = "tweets-by-sentiment"
     //sentimentTweets.saveAsTextFile(sentimentTweetOutputDir)
     val positiveTweets = sentimentTweets.sortByKey(ascending = false).take(5)
     val negativeTweets = sentimentTweets.sortByKey(ascending = true).take(5)
