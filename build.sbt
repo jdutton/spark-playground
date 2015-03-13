@@ -5,14 +5,14 @@ version := "0.11"
 scalaVersion := "2.10.4"
 
 resolvers ++= Seq(
-  "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/",
+  "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/",
   "Akka Repository" at "http://repo.akka.io/releases/",
   "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots")
 
 // Base Spark-provided dependencies
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-core" % "1.2.1" % "provided",
-  "org.apache.spark" %% "spark-streaming" % "1.2.1" % "provided",
+  "org.apache.spark" %% "spark-core" % "1.3.0" % "provided",
+  "org.apache.spark" %% "spark-streaming" % "1.3.0" % "provided",
   "org.apache.hadoop" % "hadoop-client" % "2.4.0" % "provided")
 
 // Extra libraries used in the playground
@@ -22,7 +22,7 @@ libraryDependencies ++= Seq(
 
 // Twitter integration
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-streaming-twitter" % "1.2.1")
+  "org.apache.spark" %% "spark-streaming-twitter" % "1.3.0")
 
 // Elasticsearch integration
 libraryDependencies ++= Seq(
@@ -35,7 +35,7 @@ libraryDependencies ++= Seq(
 
 // Kafka Dependencies
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-streaming-kafka" % "1.2.1")
+  "org.apache.spark" %% "spark-streaming-kafka" % "1.3.0")
 
 // Test-related libraries
 libraryDependencies ++= Seq(
@@ -56,6 +56,13 @@ libraryDependencies ~= { _ map {
       exclude("com.esotericsoftware.minlog", "minlog")
   case m => m
 }}
+
+assemblyMergeStrategy in assembly := {
+  case PathList("org", "apache", "spark", "unused", "UnusedStubClass.class") => MergeStrategy.discard
+  case x =>
+    val oldStrategy = (assemblyMergeStrategy in assembly).value
+    oldStrategy(x)
+}
 
 initialCommands in console := """
   import org.apache.spark._
