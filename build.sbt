@@ -4,6 +4,8 @@ version := "0.11"
 
 scalaVersion := "2.10.4"
 
+val sparkVers = "1.3.1"
+
 resolvers ++= Seq(
   "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/",
   "Akka Repository" at "http://repo.akka.io/releases/",
@@ -11,9 +13,8 @@ resolvers ++= Seq(
 
 // Base Spark-provided dependencies
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-core" % "1.3.0" % "provided",
-  "org.apache.spark" %% "spark-streaming" % "1.3.0" % "provided",
-  "org.apache.hadoop" % "hadoop-client" % "2.4.0" % "provided")
+  "org.apache.spark" %% "spark-core" % sparkVers % "provided",
+  "org.apache.spark" %% "spark-streaming" % sparkVers % "provided")
 
 // Extra libraries used in the playground
 libraryDependencies ++= Seq(
@@ -22,11 +23,12 @@ libraryDependencies ++= Seq(
 
 // Twitter integration
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-streaming-twitter" % "1.3.0")
+  "org.apache.spark" %% "spark-streaming-twitter" % sparkVers)
 
 // Elasticsearch integration
 libraryDependencies ++= Seq(
   ("org.elasticsearch" % "elasticsearch-spark_2.10" % "2.1.0.BUILD-SNAPSHOT").
+    exclude("com.google.guava", "guava").
     exclude("org.apache.hadoop", "hadoop-yarn-api").
     exclude("org.eclipse.jetty.orbit", "javax.mail.glassfish").
     exclude("org.eclipse.jetty.orbit", "javax.servlet").
