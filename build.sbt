@@ -2,9 +2,9 @@ name := "spark-playground"
 
 version := "0.11"
 
-scalaVersion := "2.10.4"
+scalaVersion := "2.10.5"
 
-val sparkVers = "1.3.1"
+val sparkVers = "1.5.2"
 
 resolvers ++= Seq(
   "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/",
@@ -27,7 +27,7 @@ libraryDependencies ++= Seq(
 
 // Elasticsearch integration
 libraryDependencies ++= Seq(
-  ("org.elasticsearch" % "elasticsearch-spark_2.10" % "2.1.0.BUILD-SNAPSHOT").
+  ("org.elasticsearch" % "elasticsearch-spark_2.10" % "2.1.2").
     exclude("com.google.guava", "guava").
     exclude("org.apache.hadoop", "hadoop-yarn-api").
     exclude("org.eclipse.jetty.orbit", "javax.mail.glassfish").
@@ -37,7 +37,7 @@ libraryDependencies ++= Seq(
 
 // Kafka Dependencies
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-streaming-kafka" % "1.3.0")
+  "org.apache.spark" %% "spark-streaming-kafka" % sparkVers)
 
 // Test-related libraries
 libraryDependencies ++= Seq(
