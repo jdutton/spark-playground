@@ -1,5 +1,6 @@
 package playground
 
+import kafka.serializer.StringDecoder
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -8,6 +9,7 @@ import org.apache.spark.storage._
 import org.apache.spark.streaming._
 import org.apache.spark.streaming.StreamingContext._
 import org.apache.spark.streaming.dstream._
+import org.apache.spark.streaming.kafka._
 import play.api.libs.json.Json
 import scala.collection.immutable._
 
@@ -49,12 +51,15 @@ object MericaStreaming {
 
       rawMericaIdTweetJson.foreachRDD { rdd =>
         rdd.foreachPartition { partitionOfTweets =>
+          val tweets = partitionOfTweets.toArray
           // It's simple, but definitely inefficient to create a new Kafka producer for each RDD partition
-          Kafka.putKeyValues(Kafka.defaultBrokers, topicName, partitionOfTweets)
+          Kafka.putKeyValues(Kafka.defaultBrokers, topicName, tweets)
         }
       }
 
-      val kafkaInput = Kafka.createInputStream(ssc, Kafka.defaultZKEndpoints, "MericaStreamingGroup", topicName)
+      // Create direct kafka stream with brokers and topics
+      val kafkaParams = Map[String, String]("metadata.broker.list" -> Kafka.defaultBrokers.mkString(","))
+      val kafkaInput = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](ssc, kafkaParams, Set(topicName))
       kafkaInput
     }
 
@@ -91,6 +96,6 @@ object MericaStreaming {
     mericaTweetSentimentStream.print()
 
     ssc.start()
-    ssc.awaitTermination(1000)
+    ssc.awaitTerminationOrTimeout(100000)
   }
 }

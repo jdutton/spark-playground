@@ -18,9 +18,18 @@ The Scala experiments code is located in the standard directory layout at `src/m
 To build the various experiments into a jar for submitting to spark, run `sbt assembly`.  For example:
 
 ```
-$ sbt assembly
-$ spark-submit --class playground.HardFeelings --master local[4] target/scala-2.10/spark-playground-assembly-*.jar
+sbt assembly
+spark-submit --class playground.HardFeelings --master local[*] target/scala-2.11/spark-playground-assembly-*.jar
 ```
+
+Or, to build and run with Scala 2.10, which most distributions of Spark are currently built against:
+
+```
+sbt ++2.10.5 assembly
+spark-submit --class playground.HardFeelings --master local[*] target/scala-2.10/spark-playground-assembly-*.jar
+```
+
+The rest of the examples assume this project is built against Scala 2.10.
 
 ## Live Tweets
 
@@ -33,7 +42,7 @@ how to obtain them.
 To see live tweets printed out:
 
 ```
-$ spark-submit --class playground.connector.Twitter --master local[4] target/scala-2.10/spark-playground-assembly-*.jar
+spark-submit --class playground.connector.Twitter --master local[*] target/scala-2.10/spark-playground-assembly-*.jar
 ```
 
 ## Elasticsearch
@@ -46,16 +55,25 @@ See examples below.
 ### Kafka
 
 To enable Kafka in the playground, make sure Kafka is running locally.  Kafka broker expected to be
-on `localhost:9092` and zookeeper is expected to be on `localhost:2181
+on `localhost:9092` and zookeeper is expected to be on `localhost:2181`.
 
-See http://www.michael-noll.com/blog/2014/10/01/kafka-spark-streaming-integration-example-tutorial/
-for a good guide on Spark/Kafka integration.
+First, make sure the Kafka topic `MericaTweets` exists.  To list topics, run:
+
+```
+kafka-topics.sh --zookeeper localhost:2181 --list
+```
+
+If the `MericaTweets` topic does not exist, create it:
+
+```
+kafka-topics.sh --zookeeper localhost:2181 --create --replication-factor 1 --partitions 1 --topic MericaTweets
+```
 
 To listen in externally to the `MericaTweets` feed from `MericaStreaming`, optionally from the
 beginning of the queue:
 
 ```
-$ kafka-console-consumer.sh --zookeeper localhost:2181 --topic MericaTweets [--from-beginning]
+kafka-console-consumer.sh --zookeeper localhost:2181 --topic MericaTweets [--from-beginning]
 ```
 
 ## HDFS
@@ -72,16 +90,16 @@ local files rather than HDFS.
 To run streaming tweet processing, you can enable or disable various external datastores, for example:
 
 ```
-$ spark-submit --class playground.MericaStreaming --master local[4] target/scala-2.10/spark-playground-assembly-*.jar
-$ spark-submit --conf spark.playground.kafka.enabled=true --class playground.MericaStreaming --master local[4] target/scala-2.10/spark-playground-assembly-*.jar
-$ spark-submit --conf spark.playground.kafka.enabled=true --conf spark.playground.es.enabled=true --class playground.MericaStreaming --master local[4] target/scala-2.10/spark-playground-assembly-*.jar
+spark-submit --class playground.MericaStreaming --master local[*] target/scala-2.10/spark-playground-assembly-*.jar
+spark-submit --conf spark.playground.kafka.enabled=true --class playground.MericaStreaming --master local[*] target/scala-2.10/spark-playground-assembly-*.jar
+spark-submit --conf spark.playground.kafka.enabled=true --conf spark.playground.es.enabled=true --class playground.MericaStreaming --master local[*] target/scala-2.10/spark-playground-assembly-*.jar
 ```
 
 To save the tweets for offline batch processing (see below), run with `--conf
 spark.playground.hdfs.enabled=true`, e.g:
 
 ```
-$ spark-submit --conf spark.playground.hdfs.enabled=true --class playground.MericaStreaming --master local[4] target/scala-2.10/spark-playground-assembly-*.jar
+spark-submit --conf spark.playground.hdfs.enabled=true --class playground.MericaStreaming --master local[*] target/scala-2.10/spark-playground-assembly-*.jar
 ```
 
 Note that any combination of the above `--conf` external datastores is supported.
@@ -98,8 +116,8 @@ To do batch sentiment analysis on the tweets saved from the MericaStreaming proc
 above, run any of the following:
 
 ```
-$ spark-submit --class playground.Merica --master local[4] target/scala-2.10/spark-playground-assembly-*.jar
-$ spark-submit --conf spark.playground.es.enabled=true --class playground.Merica --master local[4] target/scala-2.10/spark-playground-assembly-*.jar
+spark-submit --class playground.Merica --master local[*] target/scala-2.10/spark-playground-assembly-*.jar
+spark-submit --conf spark.playground.es.enabled=true --class playground.Merica --master local[*] target/scala-2.10/spark-playground-assembly-*.jar
 ```
 
 ## Development
@@ -107,7 +125,7 @@ $ spark-submit --conf spark.playground.es.enabled=true --class playground.Merica
 Just like any other SBT project, to develop in Eclipse (like the Scala IDE), initialize or update the Scala project by running:
 
 ```
-$ sbt eclipse
+sbt eclipse
 ```
 
 ## Testing
@@ -115,5 +133,5 @@ $ sbt eclipse
 Just like any other SBT project, to run unit tests:
 
 ```
-$ sbt test
+sbt test
 ```
