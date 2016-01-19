@@ -2,19 +2,6 @@ package playground.model
 
 import play.api.libs.json._
 
-case class Tweet(id: String, text: String, hashtags: Set[String], retweet: Boolean, countryCode: String = "", stateCode: String = "", city: String = "") {
-
-  def hasLocation: Boolean = countryCode.nonEmpty && stateCode.nonEmpty && city.nonEmpty
-
-  def words: List[String] = Sentiment.words(text)
-
-  lazy val passion: Int = Sentiment.passion(text)
-
-  lazy val sentiment: Int = Sentiment.sentiment(text)
-
-  lazy val emotion = Emotion(passion = passion, sentiment = sentiment)
-}
-
 object Tweet {
 
   implicit val _ = Json.format[Tweet]
@@ -59,7 +46,8 @@ object Tweet {
       countryCode <- Option(place.getCountry).orElse(Some(""))
     } yield {
       val (city, stateCode) = cityState(placeType, placeName, placeFullName)
-      Tweet(id = t.getId.toString,
+      Tweet(
+        id = t.getId.toString,
         text = t.getText, hashtags = t.getHashtagEntities.toSeq.map(_.getText).toSet,
         retweet = t.isRetweet,
         city = city,
@@ -68,4 +56,19 @@ object Tweet {
     }
   }
 
+}
+
+case class Tweet(id: String, text: String, hashtags: Set[String], retweet: Boolean, countryCode: String = "", stateCode: String = "", city: String = "") {
+
+  def hasLocation: Boolean = countryCode.nonEmpty && stateCode.nonEmpty && city.nonEmpty
+
+  def words: List[String] = Sentiment.words(text)
+
+  lazy val passion: Int = Sentiment.passion(text)
+
+  lazy val sentiment: Int = Sentiment.sentiment(text)
+
+  lazy val emotion = Emotion(passion = passion, sentiment = sentiment)
+
+  def toJson: JsObject = Json.toJson(this).as[JsObject]
 }

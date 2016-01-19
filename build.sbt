@@ -38,11 +38,13 @@ libraryDependencies ++= Seq(
 // Kafka Dependencies
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-streaming-kafka" % sparkVers,
-  "org.apache.kafka" % "kafka-clients" % "0.8.2.1")
+  "org.apache.kafka" % "kafka-clients" % "0.8.2.1",
+  "net.sf.jopt-simple" % "jopt-simple" % "4.9")
 
 // Test-related libraries
 libraryDependencies ++= Seq(
-  "org.specs2" %% "specs2" % "2.3.13" % "test")
+  "org.scalatest" %% "scalatest" % "2.2.6" % "test",
+  "org.mockito" % "mockito-core" % "1.10.19" % "test")
 
 
 scalariformSettings
